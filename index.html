@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خلفية ثابتة</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-image: url('https://i.imgur.com/sJFJdPp.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            padding-top: 80px;
+            overflow-y: auto;
+        }
+
+        .header {
+            background-color: #517DA2;
+            color: white;
+            text-align: left;
+            padding: 10px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 60px;
+        }
+
+        .header img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            border-radius: 50%; /* لجعل الصورة مصغرة بشكل دائري */
+            object-fit: cover;
+        }
+
+        .header span {
+            margin-top: -10px;
+        }
+
+        .header p {
+            margin: 0;
+            font-weight: normal;
+            color: white;
+            font-size: 12px;
+            position: relative;
+            top: -5px;
+        }
+
+        .telegram-widget {
+            width: 90%;
+            max-width: 400px;
+            margin: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: transparent;
+            position: relative;
+        }
+
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: flex-start;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
+        .input-container textarea {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 0;
+            margin-right: 10px;
+            background-color: #fff;
+            height: auto;
+            min-height: 40px;
+            resize: none;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .input-container button {
+            background-color: #2196F3;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        .input-container button i {
+            color: white;
+            font-size: 20px;
+        }
+
+        .input-container button:hover {
+            transform: scale(1.1);
+        }
+
+        .input-container button:disabled {
+            background-color: #B0BEC5;
+            cursor: not-allowed;
+        }
+
+        .message {
+            width: 90%;
+            max-width: 400px;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: #2196F3;
+            border-radius: 8px;
+            color: white;
+            direction: rtl;
+            text-align: right;
+            display: none;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #fff;
+            margin-top: 5px;
+            text-align: left;
+        }
+
+        @keyframes vibrate {
+            0% { transform: translate(0); }
+            25% { transform: translate(-2px, 0); }
+            50% { transform: translate(2px, 0); }
+            75% { transform: translate(-2px, 0); }
+            100% { transform: translate(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://i.imgur.com/UQFiYXa.jpeg" alt="صورة مصغرة">
+        <div>
+            <span>أدعية وأذكار</span>
+            <p>1.4k مشترك</p>
+        </div>
+    </div>
+
+    <div class="telegram-widget">
+        <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                data-telegram-post="El_RaYhaNe/18093" 
+                data-width="100%"></script>
+    </div>
+
+    <div class="telegram-widget">
+        <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                data-telegram-post="El_RaYhaNe/18100" 
+                data-width="100%"></script>
+    </div>
+
+    <div class="telegram-widget">
+        <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                data-telegram-post="El_RaYhaNe/18082" 
+                data-width="100%"></script>
+    </div>
+
+    <div class="input-container">
+        <textarea rows="1" placeholder="اكتب رسالتك هنا..." aria-label="رسالة" id="messageInput" maxlength="300"></textarea>
+        <button id="sendButton" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+
+    <div id="messageContainer">
+        <div class="message" id="currentMessage" style="display: none;"></div>
+        <div class="timestamp" id="currentTimestamp" style="display: none;"></div>
+    </div>
+
+    <script>
+        const textarea = document.getElementById('messageInput');
+        const messageContainer = document.getElementById('messageContainer');
+        const sendButton = document.getElementById('sendButton');
+        const currentMessage = document.getElementById('currentMessage');
+        const currentTimestamp = document.getElementById('currentTimestamp');
+
+        function checkCooldown() {
+            const lastSendTime = localStorage.getItem('lastSendTime');
+            if (lastSendTime) {
+                const now = new Date().getTime();
+                const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 ساعة بالمللي ثانية
+                if (now - lastSendTime < cooldownPeriod) {
+                    const remainingTime = cooldownPeriod - (now - lastSendTime);
+                    const hours = Math.floor(remainingTime / 3600000);
+                    const minutes = Math.floor((remainingTime % 3600000) / 60000);
+                    const seconds = Math.floor((remainingTime % 60000) / 1000);
+                    textarea.placeholder = `انتظر ${hours} ساعة و${minutes} دقيقة و${seconds} ثانية`;
+                    sendButton.disabled = true;
+                    textarea.disabled = true;
+
+                    const countdown = setInterval(() => {
+                        const now = new Date().getTime();
+                        const remainingTime = cooldownPeriod - (now - lastSendTime);
+                        if (remainingTime <= 0) {
+                            clearInterval(countdown);
+                            sendButton.disabled = false;
+                            textarea.disabled = false;
+                            textarea.placeholder = 'اكتب رسالتك هنا...';
+                        } else {
+                            const hours = Math.floor(remainingTime / 3600000);
+                            const minutes = Math.floor((remainingTime % 3600000) / 60000);
+                            const seconds = Math.floor((remainingTime % 60000) / 1000);
+                            textarea.placeholder = `انتظر ${hours} ساعة و${minutes} دقيقة و${seconds} ثانية`;
+                        }
+                    }, 1000);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function setCooldown() {
+            const now = new Date().getTime();
+            localStorage.setItem('lastSendTime', now);
+        }
+
+        textarea.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        async function sendMessage() {
+            if (checkCooldown()) return;
+
+            const message = textarea.value.trim();
+
+            const urlRegex = /https?:\/\/[^\s]+/;
+            const arabicRegex = /^[\u0600-\u06FF\s]+$/;
+
+            if (message === '') {
+                Swal.fire({
+                    title: 'خطأ',
+                    text: 'لا يمكن إرسال رسالة فارغة.',
+                    icon: 'error',
+                    confirmButtonText: 'موافق'
+                });
+                return;
+            }
+
+            if (urlRegex.test(message)) {
+                Swal.fire({
+                    title: 'خطأ',
+                    text: 'يرجى عدم إدخال روابط في الرسالة.',
+                    icon: 'error',
+                    confirmButtonText: 'موافق'
+                });
+                return;
+            }
+
+            if (!arabicRegex.test(message)) {
+                Swal.fire({
+                    title: 'خطأ',
+                    text: 'يرجى إدخال نص عربي فقط.',
+                    icon: 'error',
+                    confirmButtonText: 'موافق'
+                });
+                return;
+            }
+
+            currentMessage.textContent = message;
+            currentMessage.style.display = 'block';
+
+            const now = new Date();
+            currentTimestamp.textContent = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+            currentTimestamp.style.display = 'block';
+
+            textarea.value = '';
+            textarea.style.height = 'auto';
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+
+            sendButton.style.animation = 'vibrate 0.2s';
+            setTimeout(() => {
+                sendButton.style.animation = '';
+            }, 200);
+
+            const token = '7512078131:AAG2q9UKzx76ld4bNE1B2uzGsDJ24vrHWK4'; // استبدل بـ توكن البوت الخاص بك
+            const chatId = '-1002251941710'; // استبدل بـ معرّف الدردشة الخاص بك
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: `<b>${message}</b>`,
+                    parse_mode: 'HTML',
+                }),
+            });
+
+            if (response.ok) {
+                sendButton.innerHTML = '<i class="fas fa-lock"></i>';
+                sendButton.disabled = true;
+                textarea.disabled = true;
+
+                Swal.fire({
+                    title: 'نجح الإرسال!',
+                    text: 'تم إرسال الرسالة بنجاح.',
+                    icon: 'success',
+                    confirmButtonText: 'موافق'
+                });
+
+                setCooldown();
+
+                const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 ساعة بالمللي ثانية
+                let remainingTime = cooldownPeriod;
+                
+                const countdown = setInterval(() => {
+                    const hours = Math.floor(remainingTime / 3600000);
+                    const minutes = Math.floor((remainingTime % 3600000) / 60000);
+                    const seconds = Math.floor((remainingTime % 60000) / 1000);
+                    textarea.placeholder = `انتظر ${hours} ساعة و${minutes} دقيقة و${seconds} ثانية`;
+
+                    remainingTime -= 1000;
+                    if (remainingTime <= 0) {
+                        clearInterval(countdown);
+                        sendButton.disabled = false;
+                        textarea.disabled = false;
+                        textarea.placeholder = 'اكتب رسالتك هنا...';
+                    }
+                }, 1000);
+
+            } else {
+                Swal.fire({
+                    title: 'فشل الإرسال',
+                    text: 'حدث خطأ أثناء إرسال الرسالة.',
+                    icon: 'error',
+                    confirmButtonText: 'موافق'
+                });
+            }
+        }
+
+        checkCooldown(); // تحقق من فترة التهدئة عند تحميل الصفحة
+    </script>
+</body>
+</html>
